@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="cinefast_red">#E63946</color>
+    <color name="cinefast_red_dark">#CC3333</color>
+    <color name="dark_gray">#2D2D2D</color>
+    <color name="medium_gray">#4A4A4A</color>
+    <color name="light_gray">#6B6B6B</color>
+    <color name="text_gray">#9E9E9E</color>
+    <color name="seat_available">#3D3D3D</color>
+    <color name="seat_selected">#2E7D32</color>
+    <color name="seat_booked">#E63946</color>
+    <color name="screen_curve">#5A5A5A</color>
+</resources>
