@@ -3,79 +3,101 @@ package com.cinefast.app;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SeatSelectionActivity extends AppCompatActivity {
+public class SeatSelectionFragment extends Fragment {
 
-    public static final String EXTRA_MOVIE_NAME = "movie_name";
-    public static final String EXTRA_SELECTED_SEATS = "selected_seats";
-    public static final String EXTRA_TOTAL_PRICE = "total_price";
-    public static final String EXTRA_SKIP_SNACKS = "skip_snacks";
+    public static final String ARG_MOVIE_NAME = "arg_movie_name";
+    public static final String ARG_MOVIE_TYPE = "arg_movie_type";
 
     private static final int PRICE_PER_SEAT = 16;
     private static final String[] ROWS = {"A", "B", "C", "D", "E"};
     private static final int SEATS_PER_ROW = 8;
     private static final String YOUTUBE_SEARCH_URL = "https://www.youtube.com/results?search_query=";
 
-    private String movieName;
-    private Set<String> selectedSeats = new HashSet<>();
-    private Set<String> bookedSeats = new HashSet<>();
-    private List<View> seatViews = new ArrayList<>();
-    private boolean seatsReserved = false;
+    private String movieName = "Movie";
     private boolean isComingSoonMovie = false;
+
+    private final Set<String> selectedSeats = new HashSet<>();
+    private final Set<String> bookedSeats = new HashSet<>();
+    private final List<View> seatViews = new ArrayList<>();
+    private boolean seatsReserved = false;
 
     private TextView tvSelectedSeats;
     private Button btnProceedToSnacks;
     private Button btnBookSeats;
 
+    public static SeatSelectionFragment newInstance(String movieName, String movieType) {
+        SeatSelectionFragment f = new SeatSelectionFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_MOVIE_NAME, movieName);
+        args.putString(ARG_MOVIE_TYPE, movieType);
+        f.setArguments(args);
+        return f;
+    }
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_seat_selection);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.activity_seat_selection, container, false);
+    }
 
-        movieName = getIntent().getStringExtra(EXTRA_MOVIE_NAME);
-        if (movieName == null) movieName = "Movie";
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        tvSelectedSeats = findViewById(R.id.tvSelectedSeats);
-        btnProceedToSnacks = findViewById(R.id.btnProceedToSnacks);
-        btnBookSeats = findViewById(R.id.btnBookSeats);
+        Bundle args = getArguments();
+        if (args != null) {
+            String name = args.getString(ARG_MOVIE_NAME);
+            if (name != null) movieName = name;
+            String type = args.getString(ARG_MOVIE_TYPE);
+            isComingSoonMovie = MoviesAdapter.MOVIE_TYPE_COMING_SOON.equals(type);
+        }
+
+        tvSelectedSeats = view.findViewById(R.id.tvSelectedSeats);
+        btnProceedToSnacks = view.findViewById(R.id.btnProceedToSnacks);
+        btnBookSeats = view.findViewById(R.id.btnBookSeats);
         btnBookSeats.setEnabled(false);
 
-        String type = getIntent().getStringExtra(MoviesAdapter.EXTRA_MOVIE_TYPE);
-        isComingSoonMovie = MoviesAdapter.MOVIE_TYPE_COMING_SOON.equals(type);
-
-        TextView tvMovieTitle = findViewById(R.id.tvMovieTitle);
+        TextView tvMovieTitle = view.findViewById(R.id.tvMovieTitle);
         tvMovieTitle.setText(movieName);
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> onBackPressed());
+        view.findViewById(R.id.btnBack).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
 
         initBookedSeats();
-        buildSeatGrid();
+        buildSeatGrid(view);
 
         if (isComingSoonMovie) {
             applyComingSoonMode();
         } else {
-            btnBookSeats.setOnClickListener(v -> confirmBooking(true));
+            btnBookSeats.setOnClickListener(v -> confirmBooking());
             btnProceedToSnacks.setOnClickListener(v -> {
                 seatsReserved = true;
-                Intent intent = new Intent(SeatSelectionActivity.this, SnacksActivity.class);
-                intent.putExtra(SnacksActivity.EXTRA_MOVIE_NAME, movieName);
-                intent.putExtra(SnacksActivity.EXTRA_SEAT_COUNT, selectedSeats.size());
-                intent.putExtra(SnacksActivity.EXTRA_TICKET_PRICE, selectedSeats.size() * PRICE_PER_SEAT);
-                intent.putStringArrayListExtra(SnacksActivity.EXTRA_SELECTED_SEATS, new ArrayList<>(selectedSeats));
-                startActivity(intent);
-                finish();
+                if (requireActivity() instanceof MainActivity) {
+                    ((MainActivity) requireActivity()).openSnacks(
+                            movieName,
+                            selectedSeats.size(),
+                            selectedSeats.size() * PRICE_PER_SEAT,
+                            new ArrayList<>(selectedSeats)
+                    );
+                }
             });
         }
     }
@@ -90,13 +112,13 @@ public class SeatSelectionActivity extends AppCompatActivity {
         bookedSeats.add("E8");
     }
 
-    private void buildSeatGrid() {
-        LinearLayout seatGrid = findViewById(R.id.seatGrid);
+    private void buildSeatGrid(View root) {
+        LinearLayout seatGrid = root.findViewById(R.id.seatGrid);
         int sizeDp = (int) (36 * getResources().getDisplayMetrics().density);
         int marginDp = (int) (4 * getResources().getDisplayMetrics().density);
 
         for (String row : ROWS) {
-            LinearLayout rowLayout = new LinearLayout(this);
+            LinearLayout rowLayout = new LinearLayout(requireContext());
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
             rowLayout.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -104,7 +126,7 @@ public class SeatSelectionActivity extends AppCompatActivity {
 
             for (int s = 1; s <= SEATS_PER_ROW; s++) {
                 String seatId = row + s;
-                View seat = new View(this);
+                View seat = new View(requireContext());
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(sizeDp, sizeDp);
                 params.setMargins(marginDp, marginDp, marginDp, marginDp);
                 seat.setLayoutParams(params);
@@ -150,7 +172,7 @@ public class SeatSelectionActivity extends AppCompatActivity {
         tvSelectedSeats.setText("Selected: " + selectedSeats.size() + " seats · $" + total);
         boolean hasSeats = selectedSeats.size() > 0;
         btnProceedToSnacks.setEnabled(hasSeats);
-        findViewById(R.id.btnBookSeats).setEnabled(hasSeats);
+        btnBookSeats.setEnabled(hasSeats);
     }
 
     private void applyComingSoonMode() {
@@ -167,21 +189,23 @@ public class SeatSelectionActivity extends AppCompatActivity {
     private void openTrailer() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(YOUTUBE_SEARCH_URL + Uri.encode(movieName + " trailer")));
-        if (intent.resolveActivity(getPackageManager()) != null) {
+        if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
             startActivity(intent);
         }
     }
 
-    private void confirmBooking(boolean skipSnacks) {
-        int ticketPrice = selectedSeats.size() * PRICE_PER_SEAT;
-        Intent intent = new Intent(SeatSelectionActivity.this, TicketSummaryActivity.class);
-        intent.putExtra(TicketSummaryActivity.EXTRA_MOVIE_NAME, movieName);
-        intent.putExtra(TicketSummaryActivity.EXTRA_SEAT_COUNT, selectedSeats.size());
-        intent.putExtra(TicketSummaryActivity.EXTRA_TICKET_PRICE, ticketPrice);
-        intent.putExtra(TicketSummaryActivity.EXTRA_SNACKS_TOTAL, 0);
-        intent.putStringArrayListExtra(TicketSummaryActivity.EXTRA_SELECTED_SEATS, new ArrayList<>(selectedSeats));
-        Toast.makeText(this, "Booking Confirmed!", Toast.LENGTH_SHORT).show();
-        startActivity(intent);
-        finish();
+    private void confirmBooking() {
+        Toast.makeText(requireContext(), "Booking Confirmed!", Toast.LENGTH_SHORT).show();
+        if (requireActivity() instanceof MainActivity) {
+            ((MainActivity) requireActivity()).openTicketSummary(
+                    movieName,
+                    selectedSeats.size(),
+                    selectedSeats.size() * PRICE_PER_SEAT,
+                    0.0,
+                    new ArrayList<>(selectedSeats),
+                    ""
+            );
+        }
     }
 }
+

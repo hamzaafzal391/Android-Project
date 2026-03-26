@@ -4,18 +4,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-public class TicketSummaryActivity extends AppCompatActivity {
+public class TicketSummaryFragment extends Fragment {
 
-    public static final String EXTRA_MOVIE_NAME = "movie_name";
-    public static final String EXTRA_SEAT_COUNT = "seat_count";
-    public static final String EXTRA_TICKET_PRICE = "ticket_price";
-    public static final String EXTRA_SNACKS_TOTAL = "snacks_total";
-    public static final String EXTRA_SELECTED_SEATS = "selected_seats";
-    public static final String EXTRA_SNACK_ITEMS = "snack_items";
+    public static final String ARG_MOVIE_NAME = "arg_movie_name";
+    public static final String ARG_SEAT_COUNT = "arg_seat_count";
+    public static final String ARG_TICKET_PRICE = "arg_ticket_price";
+    public static final String ARG_SNACKS_TOTAL = "arg_snacks_total";
+    public static final String ARG_SELECTED_SEATS = "arg_selected_seats";
+    public static final String ARG_SNACK_ITEMS = "arg_snack_items";
 
     private static final int PRICE_PER_SEAT = 16;
     private static final String PREFS_NAME = "cinefast_prefs";
@@ -23,17 +30,39 @@ public class TicketSummaryActivity extends AppCompatActivity {
     private static final String KEY_LAST_SEAT_COUNT = "last_seat_count";
     private static final String KEY_LAST_TOTAL_CENTS = "last_total_cents";
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ticket_summary);
+    public static TicketSummaryFragment newInstance(String movieName, int seatCount, int ticketPrice,
+                                                    double snacksTotal, ArrayList<String> selectedSeats,
+                                                    String snackItems) {
+        TicketSummaryFragment f = new TicketSummaryFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_MOVIE_NAME, movieName);
+        args.putInt(ARG_SEAT_COUNT, seatCount);
+        args.putInt(ARG_TICKET_PRICE, ticketPrice);
+        args.putDouble(ARG_SNACKS_TOTAL, snacksTotal);
+        args.putStringArrayList(ARG_SELECTED_SEATS, selectedSeats);
+        args.putString(ARG_SNACK_ITEMS, snackItems);
+        f.setArguments(args);
+        return f;
+    }
 
-        String movieName = getIntent().getStringExtra(EXTRA_MOVIE_NAME);
-        int seatCount = getIntent().getIntExtra(EXTRA_SEAT_COUNT, 1);
-        int ticketPrice = getIntent().getIntExtra(EXTRA_TICKET_PRICE, PRICE_PER_SEAT);
-        double snacksTotal = getIntent().getDoubleExtra(EXTRA_SNACKS_TOTAL, 0);
-        ArrayList<String> selectedSeats = getIntent().getStringArrayListExtra(EXTRA_SELECTED_SEATS);
-        String snackItems = getIntent().getStringExtra(EXTRA_SNACK_ITEMS);
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.activity_ticket_summary, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Bundle b = getArguments();
+        String movieName = b != null ? b.getString(ARG_MOVIE_NAME) : null;
+        int seatCount = b != null ? b.getInt(ARG_SEAT_COUNT, 1) : 1;
+        int ticketPrice = b != null ? b.getInt(ARG_TICKET_PRICE, PRICE_PER_SEAT) : PRICE_PER_SEAT;
+        double snacksTotal = b != null ? b.getDouble(ARG_SNACKS_TOTAL, 0.0) : 0.0;
+        ArrayList<String> selectedSeats = b != null ? b.getStringArrayList(ARG_SELECTED_SEATS) : null;
+        String snackItems = b != null ? b.getString(ARG_SNACK_ITEMS) : null;
 
         if (movieName == null) movieName = "Movie";
         if (selectedSeats == null) selectedSeats = new ArrayList<>();
@@ -42,24 +71,29 @@ public class TicketSummaryActivity extends AppCompatActivity {
         double totalPrice = ticketPrice + snacksTotal;
         saveLastBooking(movieName, seatCount, totalPrice);
 
-        TextView tvMovieName = findViewById(R.id.tvMovieName);
-        TextView tvTicketsList = findViewById(R.id.tvTicketsList);
-        TextView tvSnacksList = findViewById(R.id.tvSnacksList);
-        TextView tvTotalPrice = findViewById(R.id.tvTotalPrice);
+        TextView tvMovieName = view.findViewById(R.id.tvMovieName);
+        TextView tvTicketsList = view.findViewById(R.id.tvTicketsList);
+        TextView tvSnacksList = view.findViewById(R.id.tvSnacksList);
+        TextView tvTotalPrice = view.findViewById(R.id.tvTotalPrice);
 
         tvMovieName.setText(movieName);
         tvTicketsList.setText(buildTicketsList(selectedSeats));
         tvSnacksList.setText(snackItems);
         tvTotalPrice.setText(String.format("%.2f USD", totalPrice));
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-        findViewById(R.id.btnSendTicket).setOnClickListener(v -> shareTicket(
-                movieName, seatCount, ticketPrice, snacksTotal, totalPrice, selectedSeats, snackItems));
+        view.findViewById(R.id.btnBack).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+
+        String finalMovieName = movieName;
+        ArrayList<String> finalSelectedSeats = selectedSeats;
+        String finalSnackItems = snackItems;
+        view.findViewById(R.id.btnSendTicket).setOnClickListener(v -> shareTicket(
+                finalMovieName, seatCount, ticketPrice, snacksTotal, totalPrice, finalSelectedSeats, finalSnackItems));
     }
 
     private void saveLastBooking(String movieName, int seatCount, double totalPrice) {
         int cents = (int) Math.round(totalPrice * 100.0);
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, 0);
         prefs.edit()
                 .putString(KEY_LAST_MOVIE_NAME, movieName)
                 .putInt(KEY_LAST_SEAT_COUNT, seatCount)
@@ -82,8 +116,8 @@ public class TicketSummaryActivity extends AppCompatActivity {
     }
 
     private void shareTicket(String movieName, int seatCount, int ticketPrice,
-                            double snacksTotal, double totalPrice,
-                            ArrayList<String> seats, String snackItems) {
+                             double snacksTotal, double totalPrice,
+                             ArrayList<String> seats, String snackItems) {
         String ticketText = buildTicketText(movieName, seatCount, ticketPrice, snacksTotal, totalPrice, seats, snackItems);
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -115,3 +149,4 @@ public class TicketSummaryActivity extends AppCompatActivity {
         return sb.toString();
     }
 }
+
