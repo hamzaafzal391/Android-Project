@@ -4,11 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ComingSoonFragment extends Fragment {
 
@@ -16,10 +17,15 @@ public class ComingSoonFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        TextView tv = new TextView(requireContext());
-        tv.setText("Coming Soon (RecyclerView coming next commit)");
-        tv.setTextColor(getResources().getColor(R.color.white));
-        return tv;
+        return inflater.inflate(R.layout.fragment_movie_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        RecyclerView rv = view.findViewById(R.id.moviesRecycler);
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rv.setAdapter(new MoviesAdapter(MovieData.comingSoon()));
     }
 }
 
