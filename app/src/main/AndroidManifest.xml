@@ -27,10 +27,5 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-        <!-- Assignment-1 activities kept for reference; Assignment-2 flow uses fragments inside MainActivity -->
-        <activity android:name=".HomeActivity" android:exported="false" />
-        <activity android:name=".SeatSelectionActivity" android:exported="false" />
-        <activity android:name=".SnacksActivity" android:exported="false" />
-        <activity android:name=".TicketSummaryActivity" android:exported="false" />
     </application>
 </manifest>

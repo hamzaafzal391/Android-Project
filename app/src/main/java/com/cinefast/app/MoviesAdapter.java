@@ -51,19 +51,11 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieVH> {
         });
 
         holder.btnBookSeats.setOnClickListener(v -> {
-            if (v.getContext() instanceof MainActivity) {
-                ((MainActivity) v.getContext()).openSeatSelection(
-                        movie.getName(),
-                        movie.isComingSoon() ? MOVIE_TYPE_COMING_SOON : MOVIE_TYPE_NOW_SHOWING
-                );
-            } else {
-                // Fallback (shouldn't happen once flow is fully single-activity)
-                Intent intent = new Intent(v.getContext(), SeatSelectionActivity.class);
-                intent.putExtra(SeatSelectionActivity.EXTRA_MOVIE_NAME, movie.getName());
-                intent.putExtra(EXTRA_MOVIE_TYPE,
-                        movie.isComingSoon() ? MOVIE_TYPE_COMING_SOON : MOVIE_TYPE_NOW_SHOWING);
-                v.getContext().startActivity(intent);
-            }
+            if (!(v.getContext() instanceof MainActivity)) return;
+            ((MainActivity) v.getContext()).openSeatSelection(
+                    movie.getName(),
+                    movie.isComingSoon() ? MOVIE_TYPE_COMING_SOON : MOVIE_TYPE_NOW_SHOWING
+            );
         });
     }
 
