@@ -1,6 +1,7 @@
 package com.cinefast.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,10 @@ public class TicketSummaryActivity extends AppCompatActivity {
     public static final String EXTRA_SNACK_ITEMS = "snack_items";
 
     private static final int PRICE_PER_SEAT = 16;
+    private static final String PREFS_NAME = "cinefast_prefs";
+    private static final String KEY_LAST_MOVIE_NAME = "last_movie_name";
+    private static final String KEY_LAST_SEAT_COUNT = "last_seat_count";
+    private static final String KEY_LAST_TOTAL_CENTS = "last_total_cents";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +40,7 @@ public class TicketSummaryActivity extends AppCompatActivity {
         if (snackItems == null || snackItems.isEmpty()) snackItems = "No snacks selected";
 
         double totalPrice = ticketPrice + snacksTotal;
+        saveLastBooking(movieName, seatCount, totalPrice);
 
         TextView tvMovieName = findViewById(R.id.tvMovieName);
         TextView tvTicketsList = findViewById(R.id.tvTicketsList);
@@ -49,6 +55,16 @@ public class TicketSummaryActivity extends AppCompatActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnSendTicket).setOnClickListener(v -> shareTicket(
                 movieName, seatCount, ticketPrice, snacksTotal, totalPrice, selectedSeats, snackItems));
+    }
+
+    private void saveLastBooking(String movieName, int seatCount, double totalPrice) {
+        int cents = (int) Math.round(totalPrice * 100.0);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit()
+                .putString(KEY_LAST_MOVIE_NAME, movieName)
+                .putInt(KEY_LAST_SEAT_COUNT, seatCount)
+                .putInt(KEY_LAST_TOTAL_CENTS, cents)
+                .apply();
     }
 
     private String buildTicketsList(ArrayList<String> seats) {
