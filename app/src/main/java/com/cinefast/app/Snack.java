@@ -1,0 +1,36 @@
+package com.cinefast.app;
+
+public class Snack {
+    private final String name;
+    private final double price;
+    private final int imageResId;
+    private int quantity;
+
+    public Snack(String name, double price, int imageResId) {
+        this.name = name;
+        this.price = price;
+        this.imageResId = imageResId;
+        this.quantity = 0;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getImageResId() {
+        return imageResId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = Math.max(0, quantity);
+    }
+}
+
