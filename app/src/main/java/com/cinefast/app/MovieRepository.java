@@ -47,6 +47,25 @@ public final class MovieRepository {
         return list;
     }
 
+    public static String getPosterNameForMovie(Context context, String movieName) {
+        try {
+            String json = AssetUtils.readAssetFile(context, "movies.json");
+            JSONObject root = new JSONObject(json);
+            JSONArray movies = root.optJSONArray("movies");
+            if (movies == null) return "";
+
+            for (int i = 0; i < movies.length(); i++) {
+                JSONObject m = movies.optJSONObject(i);
+                if (m == null) continue;
+                String name = m.optString("name", "");
+                if (name.equalsIgnoreCase(movieName)) {
+                    return m.optString("poster", "");
+                }
+            }
+        } catch (Exception ignored) {}
+        return "";
+    }
+
     public static List<Movie> nowShowing(Context context) {
         List<Movie> all = loadMovies(context);
         ArrayList<Movie> out = new ArrayList<>();

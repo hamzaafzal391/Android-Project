@@ -13,7 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TicketSummaryFragment extends Fragment {
 
@@ -70,6 +76,7 @@ public class TicketSummaryFragment extends Fragment {
 
         double totalPrice = ticketPrice + snacksTotal;
         saveLastBooking(movieName, seatCount, totalPrice);
+        saveBookingToFirebase(movieName, seatCount, totalPrice);
 
         TextView tvMovieName = view.findViewById(R.id.tvMovieName);
         TextView tvTicketsList = view.findViewById(R.id.tvTicketsList);
@@ -100,6 +107,39 @@ public class TicketSummaryFragment extends Fragment {
                 .putInt(KEY_LAST_TOTAL_CENTS, cents)
                 .apply();
     }
+
+    private void saveBookingToFirebase(String movieName, int seatCount, double totalPrice) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String uid = user != null ? user.getUid() : SessionManagerV3.getUid(requireContext());
+        if (uid == null) return;
+
+        String bookingId = FirebaseDatabase.getInstance()
+                .getReference("bookings")
+                .child(uid)
+                .push()
+                .getKey();
+        if (bookingId == null) return;
+
+        // We don't have explicit showtime selection; store a future timestamp so cancellation rule is testable.
+        long showTimeMillis = System.currentTimeMillis() + (24L * 60L * 60L * 1000L);
+
+        String poster = MovieRepository.getPosterNameForMovie(requireContext(), movieName);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", uid);
+        data.put("movieName", movieName);
+        data.put("seatCount", seatCount);
+        data.put("totalPrice", totalPrice);
+        data.put("showTimeMillis", showTimeMillis);
+        data.put("poster", poster);
+
+        FirebaseDatabase.getInstance()
+                .getReference("bookings")
+                .child(uid)
+                .child(bookingId)
+                .setValue(data);
+    }
+
 
     private String buildTicketsList(ArrayList<String> seats) {
         if (seats.isEmpty()) {
