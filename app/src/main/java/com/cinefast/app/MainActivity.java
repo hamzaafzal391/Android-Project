@@ -1,6 +1,8 @@
 package com.cinefast.app;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,6 +14,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d("CineFAST", "MainActivity launched");
+        Toast.makeText(this, "MainActivity launched", Toast.LENGTH_SHORT).show();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
