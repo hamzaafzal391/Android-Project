@@ -1,0 +1,54 @@
+{
+  "movies": [
+    {
+      "name": "The Dark Knight",
+      "subtitle": "Action / 152 min",
+      "poster": "poster_dark_knight",
+      "trailerQuery": "The Dark Knight trailer",
+      "type": "now_showing"
+    },
+    {
+      "name": "Inception",
+      "subtitle": "Sci-Fi / 148 min",
+      "poster": "poster_inception",
+      "trailerQuery": "Inception trailer",
+      "type": "now_showing"
+    },
+    {
+      "name": "Interstellar",
+      "subtitle": "Sci-Fi / 169 min",
+      "poster": "poster_interstellar",
+      "trailerQuery": "Interstellar trailer",
+      "type": "now_showing"
+    },
+    {
+      "name": "The Shawshank Redemption",
+      "subtitle": "Drama / 142 min",
+      "poster": "poster_shawshank",
+      "trailerQuery": "The Shawshank Redemption trailer",
+      "type": "now_showing"
+    },
+    {
+      "name": "Dune: Part Two",
+      "subtitle": "Sci-Fi / 166 min",
+      "poster": "poster_inception",
+      "trailerQuery": "Dune Part Two trailer",
+      "type": "coming_soon"
+    },
+    {
+      "name": "Oppenheimer",
+      "subtitle": "Drama / 180 min",
+      "poster": "poster_shawshank",
+      "trailerQuery": "Oppenheimer trailer",
+      "type": "coming_soon"
+    },
+    {
+      "name": "Avatar 3",
+      "subtitle": "Adventure / 190 min",
+      "poster": "poster_interstellar",
+      "trailerQuery": "Avatar 3 trailer",
+      "type": "coming_soon"
+    }
+  ]
+}
+

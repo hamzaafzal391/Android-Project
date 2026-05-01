@@ -25,7 +25,7 @@ public class NowShowingFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         RecyclerView rv = view.findViewById(R.id.moviesRecycler);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rv.setAdapter(new MoviesAdapter(MovieData.nowShowing()));
+        rv.setAdapter(new MoviesAdapter(MovieRepository.nowShowing(requireContext())));
     }
 }
 
