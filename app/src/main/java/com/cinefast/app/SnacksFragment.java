@@ -63,7 +63,7 @@ public class SnacksFragment extends Fragment {
         }
 
         tvSnackTotal = view.findViewById(R.id.tvSnackTotal);
-        snacks = SnackData.snacks();
+        snacks = SnackRepository.getSnacks(requireContext());
 
         ListView lv = view.findViewById(R.id.lvSnacks);
         SnackAdapter adapter = new SnackAdapter(requireContext(), snacks, this::updateTotal);

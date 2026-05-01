@@ -36,7 +36,7 @@ public class SnacksActivity extends AppCompatActivity {
         if (selectedSeats == null) selectedSeats = new ArrayList<>();
 
         tvSnackTotal = findViewById(R.id.tvSnackTotal);
-        snacks = SnackData.snacks();
+        snacks = SnackRepository.getSnacks(this);
 
         ListView lv = findViewById(R.id.lvSnacks);
         SnackAdapter adapter = new SnackAdapter(this, snacks, this::updateTotal);
